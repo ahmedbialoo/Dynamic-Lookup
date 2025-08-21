@@ -1,0 +1,38 @@
+void FDSourceAttValueLookup(FormControl _callingControl)
+{
+    SysTableLookup          sysTableLookup;
+    Query                   query = new Query();
+    QueryBuildDataSource    qbdsAttributeValue;
+    QueryBuildDataSource    qbdsAttribute;
+    str                     FDSourceValue = DonationParams_FDSource.valueStr();
+    // Create SysTableLookup on DimensionAttributeValue
+    sysTableLookup = SysTableLookup::newParameters(tableNum(DimensionAttributeValue), _callingControl);
+
+    sysTableLookup.addLookupfield(fieldNum(DimensionAttributeValue, DisplayValue));
+    sysTableLookup.addLookupfield(fieldNum(DimensionAttributeValue, DimensionAttribute));
+
+    // Join to DimensionAttribute to filter by dimension name
+    qbdsAttributeValue  = query.addDataSource(tableNum(DimensionAttributeValue));
+    qbdsAttribute       = qbdsAttributeValue.addDataSource(tableNum(DimensionAttribute));
+    qbdsAttribute.relations(false);
+    qbdsAttribute.joinMode(JoinMode::InnerJoin);
+    qbdsAttribute.addLink(fieldNum(DimensionAttributeValue, DimensionAttribute), fieldNum(DimensionAttribute, RecId));
+
+    // Filter by dimension name
+    qbdsAttribute.addRange(fieldNum(DimensionAttribute, Name)).value(queryValue(FDSourceValue));
+
+    sysTableLookup.parmQuery(query);
+    sysTableLookup.performFormLookup();
+}
+[Control("String")]
+class DonationParams_FDSourceValueCashier
+{
+    /// <summary>
+    ///
+    /// </summary>
+    public void lookup()
+    {
+        element.FDSourceAttValueLookup(this);
+    }
+
+}
