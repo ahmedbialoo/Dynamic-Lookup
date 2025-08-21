@@ -1,0 +1,26 @@
+public static void lookupVendorByCurrency(FormControl  _callingControl, CurrencyCode _currency)
+{
+    Query                   query;
+    QueryBuildDataSource    qbds;
+    QueryBuildRange         qbr;
+    SysTableLookup          lookup;
+    query = new Query();
+    qbds = query.addDataSource(tableNum(VendTable));
+    qbr = qbds.addRange(fieldNum(VendTable,Currency));
+    qbr.value(queryvalue(_currency));
+    lookup = SysTableLookup::newParameters( tableNum(VendTable), _callingControl, true);
+    lookup.parmQuery(query);
+    lookup.addLookupField(fieldNum(VendTable, AccountNum),true);
+    lookup.addLookupField(fieldNum(VendTable,Party));
+    lookup.addLookupField(fieldNum(VendTable,Currency));
+    lookup.performFormLookup();
+}
+ [FormControlEventHandler(formControlStr(CustTable, Vendor_VendAccount), FormControlEventType::Lookup)]
+ public void Vendor_VendAccount_OnLookup(FormControl sender, FormControlEventArgs e)
+ {
+
+     VendTable::lookupVendorByCurrency( sender, this.CustTable.Currency);
+     FormControlCancelableSuperEventArgs cancelSuper = e as FormControlCancelableSuperEventArgs;
+     //cancel super() to prevent error.
+     cancelSuper.CancelSuperCall();
+ }
